@@ -1,11 +1,11 @@
 #define snapshot 20220107
 
-Name:		bonsai
+Name:		fiery
 Version:	1.0.2
 Release:	%{?snapshot:0.%{snapshot}.}1
-Summary:	Git repository manager for Plasma Mobile
+Summary:	A convergent web browser for Maui
 URL:    	https://mauikit.org
-Source0:	https://invent.kde.org/maui/bonsai/-/archive/%{?snapshot:master}%{!?snapshot:v%{version}}/%{name}-%{?snapshot:master}%{!?snapshot:v%{version}}.tar.bz2%{?snapshot:#/%{name}-%{snapshot}.tar.bz2}
+Source0:	https://invent.kde.org/maui/fiery/-/archive/%{?snapshot:master}%{!?snapshot:v%{version}}/%{name}-%{?snapshot:master}%{!?snapshot:v%{version}}.tar.bz2%{?snapshot:#/%{name}-%{snapshot}.tar.bz2}
 License:	GPLv3
 Group:		Development/Tools
 BuildRequires:	cmake
@@ -18,12 +18,12 @@ BuildRequires:	cmake(Qt5Sql)
 BuildRequires:	cmake(Qt5Svg)
 BuildRequires:	cmake(Qt5QuickControls2)
 BuildRequires:	cmake(Qt5Xml)
+BuildRequires:  cmake(Qt5WebEngine)
 BuildRequires:	cmake(KF5I18n)
 BuildRequires:	cmake(KF5CoreAddons)
 BuildRequires:	cmake(MauiKit)
 BuildRequires:  cmake(MauiKitFileBrowsing)
 BuildRequires:	gettext
-BuildRequires:	pkgconfig(libgit2)
 BuildRequires:	cmake(Qt5QuickCompiler)
 BuildRequires:	cmake(Qt5Network)
 BuildRequires:	cmake(Qt5QmlModels)
@@ -32,7 +32,7 @@ BuildRequires:	cmake(Qt5Quick)
 BuildRequires:	cmake(Qt5Widgets)
 
 %description
-Git repository manager for Plasma Mobile
+A convergent web browser for Maui
 
 %prep
 %autosetup -p1 -n %{name}-%{?snapshot:master}%{!?snapshot:v%{version}}
@@ -43,7 +43,5 @@ Git repository manager for Plasma Mobile
 
 %install
 %ninja_install -C build
-
-%find_lang bonsai
 
 %files 

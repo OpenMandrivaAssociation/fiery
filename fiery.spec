@@ -44,4 +44,10 @@ A convergent web browser for Maui
 %install
 %ninja_install -C build
 
-%files 
+%find_lang fiery
+
+%files -f fiery.lang
+%{_bindir}/fiery
+%{_datadir}/applications/org.kde.fiery.desktop
+%{_datadir}/metainfo/org.kde.fiery.metainfo.xml
+%{_iconsdir}/hicolor/scalable/apps/fiery.svg

@@ -1,7 +1,7 @@
 #define snapshot 20220107
 
 Name:		fiery
-Version:	1.0.2
+Version:	1.1.0
 Release:	%{?snapshot:0.%{snapshot}.}1
 Summary:	A convergent web browser for Maui
 URL:    	https://mauikit.org

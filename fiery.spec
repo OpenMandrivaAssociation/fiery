@@ -1,7 +1,7 @@
 #define snapshot 20220107
 
 Name:		fiery
-Version:	1.1.0
+Version:	1.1.2
 Release:	%{?snapshot:0.%{snapshot}.}1
 Summary:	A convergent web browser for Maui
 URL:    	https://mauikit.org
@@ -21,8 +21,8 @@ BuildRequires:	cmake(Qt5Xml)
 BuildRequires:  cmake(Qt5WebEngine)
 BuildRequires:	cmake(KF5I18n)
 BuildRequires:	cmake(KF5CoreAddons)
-BuildRequires:	cmake(MauiKit)
-BuildRequires:  cmake(MauiKitFileBrowsing)
+BuildRequires:	cmake(MauiKit3)
+BuildRequires:  cmake(MauiKitFileBrowsing3)
 BuildRequires:	gettext
 BuildRequires:	cmake(Qt5QuickCompiler)
 BuildRequires:	cmake(Qt5Network)

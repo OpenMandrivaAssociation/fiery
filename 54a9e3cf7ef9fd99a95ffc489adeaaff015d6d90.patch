@@ -1,0 +1,241 @@
+From 54a9e3cf7ef9fd99a95ffc489adeaaff015d6d90 Mon Sep 17 00:00:00 2001
+From: Camilo Higuita <chiguitar@unal.edu.co>
+Date: Sat, 16 Nov 2024 10:31:41 -0500
+Subject: [PATCH] build fixes and downlaods notifications
+
+---
+ .clang-format                        |  3 +++
+ CMakeLists.txt                       |  2 +-
+ src/controllers/downloadsmanager.cpp |  4 +---
+ src/controllers/downloadsmanager.h   |  6 +++---
+ src/controllers/fierywebprofile.cpp  | 15 +++++++++++----
+ src/controllers/fierywebprofile.h    |  6 +++---
+ src/main.qml                         | 28 +++++++++++++++++++++++++---
+ src/models/downloadsmodel.cpp        |  4 ++--
+ src/views/widgets/NavigationBar.qml  |  1 -
+ 9 files changed, 49 insertions(+), 20 deletions(-)
+
+diff --git a/.clang-format b/.clang-format
+index cf5ff2c..bb67ea6 100644
+--- a/.clang-format
++++ b/.clang-format
+@@ -47,6 +47,9 @@ AllowAllParametersOfDeclarationOnNextLine: false
+ # no single line functions
+ AllowShortFunctionsOnASingleLine: None
+ 
++# no single line enums
++AllowShortEnumsOnASingleLine: false
++
+ # always break before you encounter multi line strings
+ AlwaysBreakBeforeMultilineStrings: true
+ 
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index b37f6f2..3c88e2f 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,6 +1,6 @@
+ cmake_minimum_required(VERSION 3.16)
+ 
+-set(FIERY_VERSION 2.0.0)
++set(FIERY_VERSION 2.0.1)
+ add_compile_definitions(APP_COPYRIGHT_NOTICE="ÂŠ 2022-2024 Maui Development Team")
+ 
+ set(CMAKE_CXX_STANDARD 17)
+diff --git a/src/controllers/downloadsmanager.cpp b/src/controllers/downloadsmanager.cpp
+index c41fa94..c29f0f4 100644
+--- a/src/controllers/downloadsmanager.cpp
++++ b/src/controllers/downloadsmanager.cpp
+@@ -2,8 +2,6 @@
+ #include <QDebug>
+ #include <QUrl>
+ 
+-#include <private/qquickwebenginedownloadrequest_p.h>
+-
+ DownloadsManager::DownloadsManager(QObject *parent) : QObject(parent)
+     ,m_model(new DownloadsModel(this))
+ {
+@@ -20,7 +18,7 @@ void DownloadsManager::add(DownloadItem *download)
+ {
+     qDebug() << "ADD NEW DOWNLOAD";
+     m_downloads << download;
+-    Q_EMIT newDownload(QVariant::fromValue(download));
++    Q_EMIT newDownload(download);
+ }
+ 
+ void DownloadsManager::remove(int index)
+diff --git a/src/controllers/downloadsmanager.h b/src/controllers/downloadsmanager.h
+index 116658d..7b17aae 100644
+--- a/src/controllers/downloadsmanager.h
++++ b/src/controllers/downloadsmanager.h
+@@ -3,9 +3,9 @@
+ #include <QObject>
+ 
+ #include "models/downloadsmodel.h"
++#include <QWebEngineDownloadRequest>
+ 
+-class QQuickWebEngineDownloadRequest;
+-using DownloadItem = QQuickWebEngineDownloadRequest;
++using DownloadItem = QWebEngineDownloadRequest;
+ 
+ class DownloadsManager : public QObject
+ {
+@@ -41,6 +41,6 @@ private:
+     ~DownloadsManager();
+ 
+ Q_SIGNALS:
+-    void newDownload(QVariant download);
++    void newDownload(DownloadItem *download);
+ 
+ };
+diff --git a/src/controllers/fierywebprofile.cpp b/src/controllers/fierywebprofile.cpp
+index a233e2f..63a092c 100644
+--- a/src/controllers/fierywebprofile.cpp
++++ b/src/controllers/fierywebprofile.cpp
+@@ -5,10 +5,15 @@
+ #include <QWebEngineNotification>
+ 
+ #include <QWebEngineUrlRequestInterceptor>
++#include <QWebEngineDownloadRequest>
+ 
+ #include "downloadsmanager.h"
+ 
+-#include <private/qquickwebenginedownloadrequest_p.h>
++class QQuickWebEngineDownloadRequest : public DownloadItem
++{
++};
++
++
+ 
+ FieryWebProfile::FieryWebProfile(QObject *parent)
+     : QQuickWebEngineProfile{parent}
+@@ -24,12 +29,14 @@ QWebEngineUrlRequestInterceptor *FieryWebProfile::urlInterceptor() const
+     return m_urlInterceptor;
+ }
+ 
+-void FieryWebProfile::handleDownload(DownloadItem *downloadItem)
++void FieryWebProfile::handleDownload(QQuickWebEngineDownloadRequest *downloadItem)
+ {
++        DownloadItem *download = qobject_cast<DownloadItem *>(downloadItem);
++
+     qDebug() << "GOT TO DOWNLOAD HANDLE" << downloadItem->url();
+ 
+-    downloadItem->accept();
+-    downloadItem->pause();
++    download->accept();
++    download->pause();
+ 
+     DownloadsManager::instance().add(downloadItem);
+ }
+diff --git a/src/controllers/fierywebprofile.h b/src/controllers/fierywebprofile.h
+index a9656b3..dd39c85 100644
+--- a/src/controllers/fierywebprofile.h
++++ b/src/controllers/fierywebprofile.h
+@@ -4,9 +4,9 @@
+ #include <QQuickItem>
+ #include <QQuickWebEngineProfile>
+ #include <QWebEngineUrlRequestInterceptor>
++#include <QWebEngineDownloadRequest>
+ 
+-class QQuickWebEngineDownloadRequest;
+-using DownloadItem = QQuickWebEngineDownloadRequest;
++using DownloadItem = QWebEngineDownloadRequest;
+ 
+ class QWebEngineNotification;
+ class QQuickItem;
+@@ -30,7 +30,7 @@ Q_SIGNALS:
+ 
+ private:
+ 
+-    void handleDownload(DownloadItem *downloadItem);
++    void handleDownload(QQuickWebEngineDownloadRequest *downloadItem);
+     void handleDownloadFinished(DownloadItem *downloadItem);
+     void showNotification(QWebEngineNotification *webNotification);
+ 
+diff --git a/src/main.qml b/src/main.qml
+index e01ffd5..ad4522e 100644
+--- a/src/main.qml
++++ b/src/main.qml
+@@ -87,6 +87,23 @@ Maui.ApplicationWindow
+         anchors.fill: parent
+     }
+ 
++    Action
++    {
++        id: _openDownloadAction
++        property url url
++        text: i18n("Open")
++        onTriggered: ()=> { Qt.openUrlExternally(url)}
++    }
++
++    Action
++    {
++        id: _acceptDownloadAction
++        property var download
++        text: i18n("Accept")
++        onTriggered: () =>{ _acceptDownloadAction.download.resume() }
++
++    }
++
+     property WebEngineProfile profile: Fiery.FieryWebProfile
+     {
+         //            httpUserAgent: tabs.currentItem.userAgent.userAgent
+@@ -96,11 +113,15 @@ Maui.ApplicationWindow
+         //            questionLoader: rootPage.questionLoader
+         //            urlInterceptor: typeof AdblockUrlInterceptor !== "undefined" && AdblockUrlInterceptor
+ 
+-        onDownloadFinished:
++        onDownloadFinished: (download) =>
+         {
+             switch(download.state)
+             {
+-            case WebEngineDownloadItem.DownloadCompleted: notify("dialog-warning", i18n("Download Finished"), i18n("File has been saved."), ()=> {console.log(download.downloadFileName)}, i18n("Open"))
++                case WebEngineDownloadRequest.DownloadCompleted:
++            {
++                _openDownloadAction.url = "file://"+download.downloadDirectory+"/"+download.downloadFileName
++                notify("dialog-warning", i18n("Download Finished"), i18n("File has been saved."), [_openDownloadAction])
++            }
+             }
+         }
+ 
+@@ -116,7 +137,8 @@ Maui.ApplicationWindow
+         target: Fiery.DownloadsManager
+         function onNewDownload(download)
+         {
+-            root.notify("dialog-question", download.downloadFileName, i18n("Do you want to download and save this file?"),  () =>{ download.resume() }, i18n("Accept"))
++            _acceptDownloadAction.download = download
++            root.notify("dialog-question", download.downloadFileName, i18n("Do you want to download and save this file?"), [_acceptDownloadAction])
+         }
+     }
+ 
+diff --git a/src/models/downloadsmodel.cpp b/src/models/downloadsmodel.cpp
+index a5a32d8..495ca37 100644
+--- a/src/models/downloadsmodel.cpp
++++ b/src/models/downloadsmodel.cpp
+@@ -6,13 +6,13 @@
+ #include <QMimeDatabase>
+ #include <QDir>
+ 
+-#include <private/qquickwebenginedownloadrequest_p.h>
++#include <QWebEngineDownloadRequest>
+ 
+ DownloadsModel::DownloadsModel(DownloadsManager *parent) : QAbstractListModel(parent)
+     ,m_manager(parent)
+ {
+ 
+-    connect(m_manager, &DownloadsManager::newDownload, [this](QVariant item)
++    connect(m_manager, &DownloadsManager::newDownload, [this](DownloadItem *item)
+             {
+                 beginResetModel();
+                 //                qDebug() << "RESET DOWNLOAD MODEL FOR" << item->url();
+diff --git a/src/views/widgets/NavigationBar.qml b/src/views/widgets/NavigationBar.qml
+index 7c64181..0249eb7 100644
+--- a/src/views/widgets/NavigationBar.qml
++++ b/src/views/widgets/NavigationBar.qml
+@@ -45,5 +45,4 @@ Maui.TabViewButton
+         visible: webView.loading
+ 
+     }
+-
+ }
+-- 
+GitLab

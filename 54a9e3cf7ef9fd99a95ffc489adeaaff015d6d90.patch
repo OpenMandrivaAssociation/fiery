@@ -38,7 +38,7 @@ index b37f6f2..3c88e2f 100644
  
 -set(FIERY_VERSION 2.0.0)
 +set(FIERY_VERSION 2.0.1)
- add_compile_definitions(APP_COPYRIGHT_NOTICE="ÂŠ 2022-2024 Maui Development Team")
+ add_compile_definitions(APP_COPYRIGHT_NOTICE="© 2022-2024 Maui Development Team")
  
  set(CMAKE_CXX_STANDARD 17)
 diff --git a/src/controllers/downloadsmanager.cpp b/src/controllers/downloadsmanager.cpp
@@ -239,3 +239,4 @@ index 7c64181..0249eb7 100644
  }
 -- 
 GitLab
+

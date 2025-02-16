@@ -1,12 +1,12 @@
 #define snapshot 20220107
 
 Name:		fiery
-Version:	2.0.0
+Version:	2.0.1
 Release:	%{?snapshot:0.%{snapshot}.}1
 Summary:	A convergent web browser for Maui
 URL:    	https://mauikit.org
 Source0:	https://invent.kde.org/maui/fiery/-/archive/%{?snapshot:master}%{!?snapshot:v%{version}}/maui-%{name}-%{?snapshot:master}%{!?snapshot:v%{version}}.tar.bz2%{?snapshot:#/maui-%{name}-%{snapshot}.tar.bz2}
-Patch0:   https://invent.kde.org/maui/maui-fiery/-/commit/54a9e3cf7ef9fd99a95ffc489adeaaff015d6d90.patch
+#Patch0:   https://invent.kde.org/maui/maui-fiery/-/commit/54a9e3cf7ef9fd99a95ffc489adeaaff015d6d90.patch
 License:	GPLv3
 Group:		Development/Tools
 BuildRequires:	cmake
